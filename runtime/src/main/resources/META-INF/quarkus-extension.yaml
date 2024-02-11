@@ -1,0 +1,9 @@
+name: Quarkus Health As Metrics
+#description: Expose health status as metric.
+metadata:
+#  keywords:
+#    - quarkus-health-as-metrics
+#  guide: ... # To create and publish this guide, see https://github.com/quarkiverse/quarkiverse/wiki#documenting-your-extension
+#  categories:
+#    - "miscellaneous"
+#  status: "preview"

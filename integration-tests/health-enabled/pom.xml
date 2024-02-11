@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>de.turing85</groupId>
+    <artifactId>quarkus-health-as-metrics-integration-tests-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>quarkus-health-as-metrics-integration-tests-health-enabled</artifactId>
+  <name>Quarkus Health As Metrics - Integration Tests - Health enabled</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>de.turing85</groupId>
+      <artifactId>quarkus-health-as-metrics-integration-tests-commons</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+</project>

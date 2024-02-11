@@ -1,0 +1,57 @@
+= Quarkus Health as Metrics
+
+Expose the health status of the application as metrics.
+
+When activated, the extension provides the following new metrics:
+
+.New metrics for default groups
+[code]
+----
+application_status{group="health",status="UP"}         # corresponds to /q/health
+application_status{group="live",status="UP"}           # corresponds to /q/health/live
+application_status{group="ready",status="UP"}          # corresponds to /q/health/ready
+application_status{group="startup",status="UP"}        # corresponds to /q/health/started
+application_status{group="well",status="UP"}           # corresponds to /q/health/well
+
+application_status{group="health",status="DOWN"}       # corresponds to /q/health
+application_status{group="live",status="DOWN"}         # corresponds to /q/health/live
+application_status{group="ready",status="DOWN"}        # corresponds to /q/health/ready
+application_status{group="startup",status="DOWN"}      # corresponds to /q/health/started
+application_status{group="well",status="DOWN"}         # corresponds to /q/health/well
+----
+
+Additionally, for all custom groups, a pair of checks will be created:
+
+.New metrics for custom groups
+[code]
+----
+application_status{group="<group-name>",status="UP"}   # corresponds to /q/health/group/<group-name>
+
+application_status{group="<group-name>",status="DOWN"} # corresponds to /q/health/group/<group-name>
+----
+
+When the corresponding check is up, the metric with `...,status="UP"` will have a value of `1.0`, and the corresponding metric with `...,status="DOWN"` will have a value of `0.0`.
+
+When the corresponding check is up, the metric with `...,status="UP"` will have a value of `0.0`, and the corresponding metric with `...,status="DOWN"` will have a value of `1.0`.
+
+== Contributors ✨
+
+Thanks goes to these wonderful people (https://allcontributors.org/docs/en/emoji-key[emoji key]):
+
+++++
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://turing85.github.io"><img src="https://avatars.githubusercontent.com/u/32584495?v=4?s=100" width="100px;" alt="Marco Bungart"/><br /><sub><b>Marco Bungart</b></sub></a><br /><a href="#code-turing85" title="Code">💻</a> <a href="#maintenance-turing85" title="Maintenance">🚧</a> <a href="#doc-turing85" title="Documentation">📖</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+++++
