@@ -3,7 +3,6 @@ package de.turing85.quarkus.health.as.metrics.it.commons;
 import io.smallrye.health.api.HealthGroup;
 import io.smallrye.health.api.Wellness;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.eclipse.microprofile.health.HealthCheck;
@@ -18,7 +17,6 @@ import org.eclipse.microprofile.health.Startup;
 @Readiness
 @Startup
 @Wellness
-@Getter
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class CustomHealthCheck implements HealthCheck {
@@ -26,14 +24,26 @@ public class CustomHealthCheck implements HealthCheck {
 
   @Override
   public HealthCheckResponse call() {
-    return HealthCheckResponse.named("custom").status(isHealthy()).build();
+    // @formatter:off
+    return HealthCheckResponse
+        .named("custom")
+        .status(isHealthy())
+        .withData("inner1", isHealthy() ? "UP" : "DOWN")
+        .withData("inner2", isHealthy() ? "READY" : "NOT READY")
+        .withData("inner3", isHealthy())
+        .build();
+    // @formatter:on
+  }
+
+  public boolean isHealthy() {
+    return isHealthy;
   }
 
   public void healthy() {
-    setHealthy(true);
+    isHealthy(true);
   }
 
   public void unhealthy() {
-    setHealthy(false);
+    isHealthy(false);
   }
 }

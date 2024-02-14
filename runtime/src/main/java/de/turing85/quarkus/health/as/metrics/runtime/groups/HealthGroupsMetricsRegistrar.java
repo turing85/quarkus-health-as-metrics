@@ -1,4 +1,4 @@
-package de.turing85.quarkus.health.as.metrics.runtime;
+package de.turing85.quarkus.health.as.metrics.runtime.groups;
 
 import java.util.Objects;
 import java.util.Set;
@@ -13,9 +13,10 @@ import io.smallrye.common.annotation.Identifier;
 import io.smallrye.health.SmallRyeHealth;
 import io.smallrye.health.SmallRyeHealthReporter;
 
-public class HealthMetricsRegistrar {
+public class HealthGroupsMetricsRegistrar {
   public static final String CUSTOM_HEALTH_GROUPS_BEAN_NAME = "customHealthGroups";
-  private static final String CHECK_NAME = "application.status";
+
+  private static final String STATUS_CHECK_NAME = "application.status";
   private static final String TAG_GROUP = "group";
   private static final String TAG_STATUS = "status";
 
@@ -142,7 +143,7 @@ public class HealthMetricsRegistrar {
   private static void registerReporter(SmallRyeHealthReporter reporter, String name,
       String statusTag, ToDoubleFunction<SmallRyeHealthReporter> mapper, MeterRegistry registry) {
     // @formatter:off
-    Gauge.builder(CHECK_NAME, reporter, mapper)
+    Gauge.builder(STATUS_CHECK_NAME, reporter, mapper)
         .tag(TAG_GROUP, name)
         .tag(TAG_STATUS, statusTag)
         .strongReference(true)

@@ -16,13 +16,20 @@ class HealthMetricsTest {
   @CsvSource(
       delimiter = ';',
       value = {
-          "application_status{group=\"health\",status=\"UP\"}",
-          "application_status{group=\"live\",status=\"UP\"}",
-          "application_status{group=\"ready\",status=\"UP\"}",
-          "application_status{group=\"startup\",status=\"UP\"}",
-          "application_status{group=\"well\",status=\"UP\"}",
-          "application_status{group=\"foo\",status=\"UP\"}",
-          "application_status{group=\"bar\",status=\"UP\"}",
+          "application_status{group=\"health\"",
+          "application_status{group=\"live\"",
+          "application_status{group=\"ready\"",
+          "application_status{group=\"startup\"",
+          "application_status{group=\"well\"",
+
+          "application_status{group=\"foo\"",
+          "application_status{group=\"bar\"",
+
+          "application_health_check{check=\"custom\"",
+
+          "application_health_check{check=\"custom-inner1\"",
+          "application_health_check{check=\"custom-inner2\"",
+          "application_health_check{check=\"custom-inner3\"",
       })
   // @formatter:on
   void metricDoesNotContain(String line) {

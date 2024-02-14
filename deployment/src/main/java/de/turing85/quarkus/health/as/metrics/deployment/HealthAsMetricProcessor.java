@@ -1,12 +1,17 @@
 package de.turing85.quarkus.health.as.metrics.deployment;
 
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import jakarta.inject.Singleton;
 
-import de.turing85.quarkus.health.as.metrics.runtime.CustomHealthGroupsRecorder;
-import de.turing85.quarkus.health.as.metrics.runtime.HealthMetricsRegistrar;
+import de.turing85.quarkus.health.as.metrics.runtime.checks.HealthChecksMetricsRegistrar;
+import de.turing85.quarkus.health.as.metrics.runtime.checks.datamapper.BooleanMapperRecorder;
+import de.turing85.quarkus.health.as.metrics.runtime.checks.datamapper.HealthResponseDataMapper;
+import de.turing85.quarkus.health.as.metrics.runtime.checks.datamapper.StringMappersRecorder;
+import de.turing85.quarkus.health.as.metrics.runtime.groups.CustomHealthGroupsRecorder;
+import de.turing85.quarkus.health.as.metrics.runtime.groups.HealthGroupsMetricsRegistrar;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -34,13 +39,19 @@ class HealthAsMetricProcessor {
   @BuildStep
   @Record(ExecutionTime.STATIC_INIT)
   void enable(HealthBuildTimeConfig healthBuildTimeConfig, CombinedIndexBuildItem index,
-      BuildProducer<AdditionalBeanBuildItem> beanProducer,
       BuildProducer<SyntheticBeanBuildItem> syntheticBeanProducer,
-      CustomHealthGroupsRecorder customHealthGroupsRecorder) {
+      CustomHealthGroupsRecorder customHealthGroupsRecorder,
+      StringMappersRecorder stringMappersRecorder, BooleanMapperRecorder booleanMapperRecorder,
+      BuildProducer<AdditionalBeanBuildItem> beanProducer) {
     if (healthBuildTimeConfig.extensionsEnabled) {
       registerCustomGroupsBean(syntheticBeanProducer, customHealthGroupsRecorder,
           collectCustomGroup(index));
-      beanProducer.produce(AdditionalBeanBuildItem.unremovableOf(HealthMetricsRegistrar.class));
+      registerMappers(syntheticBeanProducer, stringMappersRecorder, booleanMapperRecorder);
+
+      beanProducer
+          .produce(AdditionalBeanBuildItem.unremovableOf(HealthGroupsMetricsRegistrar.class));
+      beanProducer
+          .produce(AdditionalBeanBuildItem.unremovableOf(HealthChecksMetricsRegistrar.class));
     }
   }
 
@@ -66,10 +77,38 @@ class HealthAsMetricProcessor {
             .unremovable()
             .supplier(customHealthGroupsRecorder.wrap(customHealthGroups))
             .scope(Singleton.class)
-            .name(HealthMetricsRegistrar.CUSTOM_HEALTH_GROUPS_BEAN_NAME)
+            .name(HealthGroupsMetricsRegistrar.CUSTOM_HEALTH_GROUPS_BEAN_NAME)
             .addQualifier()
                 .annotation(Identifier.class)
-                .addValue("value", HealthMetricsRegistrar.CUSTOM_HEALTH_GROUPS_BEAN_NAME)
+                .addValue("value", HealthGroupsMetricsRegistrar.CUSTOM_HEALTH_GROUPS_BEAN_NAME)
+            .done()
+        .done());
+    // @formatter:on
+  }
+
+  private static void registerMappers(BuildProducer<SyntheticBeanBuildItem> syntheticBeanProducer,
+      StringMappersRecorder stringMappersRecorder, BooleanMapperRecorder booleanMapperRecorder) {
+    registerMapper(syntheticBeanProducer, stringMappersRecorder.upDownMapper(), "UpDownMapper");
+    registerMapper(syntheticBeanProducer, stringMappersRecorder.readyNotReadyMapper(),
+        "ReadyNotReadyMapper");
+    registerMapper(syntheticBeanProducer, booleanMapperRecorder.booleanMapper(), "BooleanMapper");
+  }
+
+  private static <T> void registerMapper(
+      BuildProducer<SyntheticBeanBuildItem> syntheticBeanProducer,
+      Supplier<HealthResponseDataMapper<T>> supplier, String name) {
+    // @formatter:off
+    syntheticBeanProducer.produce(SyntheticBeanBuildItem
+        .configure(HealthResponseDataMapper.class)
+            .addType(ParameterizedType.create(
+                HealthResponseDataMapper.class, ClassType.create(Object.class)))
+            .unremovable()
+            .supplier(supplier)
+            .scope(Singleton.class)
+            .name(name)
+            .addQualifier()
+                .annotation(Identifier.class)
+                .addValue("value", name)
             .done()
         .done());
     // @formatter:on

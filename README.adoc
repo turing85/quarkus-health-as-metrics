@@ -30,9 +30,69 @@ application_status{group="<group-name>",status="UP"}   # corresponds to /q/healt
 application_status{group="<group-name>",status="DOWN"} # corresponds to /q/health/group/<group-name>
 ----
 
+Next, for each `HealthCheck`, an additional pair of metrics is provided:
+
+.New metrics for custom health checks
+[code]
+----
+application_health_check{check="<health-check-name>",status="UP",}
+
+application_health_check{check="<health-check-name>",status="DOWN",}
+----
+
+Finally, for each date within a check, that "can be parsed", a separate metrics-pair is created. As of now, the following dates can be parsed:
+- any key, and value is either `"UP"` or `"DOWN"`
+- any key, and value is either `"READY"` or `"NOT READY"`
+- any key, and value is a boolean
+
+The class link:integration-tests/commons/src/main/java/de/turing85/quarkus/health/as/metrics/it/commons/CustomHealthCheck.java[`CustomHealthCheck.java`] defines three dates within its check:
+
+.Health check definition of `CustomHealthCheck.java`
+[code, java]
+----
+...
+public class CustomHealthCheck implements HealthCheck {
+  private boolean isHealthy = true;
+
+  @Override
+  public HealthCheckResponse call() {
+    // @formatter:off
+    return HealthCheckResponse
+        .named("custom")
+        .status(isHealthy())
+        .withData("inner1", isHealthy() ? "UP" : "DOWN")
+        .withData("inner2", isHealthy() ? "READY" : "NOT READY")
+        .withData("inner3", isHealthy())
+        .build();
+    // @formatter:on
+  }
+}
+----
+
+For the three date entries, the following six metrics are created:
+
+.New metrics for check data
+[code]
+----
+"application_health_check{check=\"custom-inner1\",status=\"UP\"}",
+"application_health_check{check=\"custom-inner2\",status=\"UP\"}",
+"application_health_check{check=\"custom-inner3\",status=\"UP\"}",
+
+"application_health_check{check=\"custom\",status=\"DOWN\"}",
+"application_health_check{check=\"custom-inner1\",status=\"DOWN\"}",
+"application_health_check{check=\"custom-inner2\",status=\"DOWN\"}",
+"application_health_check{check=\"custom-inner3\",status=\"DOWN\"}",
+----
+
+As we see, the name for the date is the check's name (`"custom"`), followed by the date's name (`"inner1"`, `"inner"2`, or `"inner3"`)
+
 When the corresponding check is up, the metric with `...,status="UP"` will have a value of `1.0`, and the corresponding metric with `...,status="DOWN"` will have a value of `0.0`.
 
 When the corresponding check is up, the metric with `...,status="UP"` will have a value of `0.0`, and the corresponding metric with `...,status="DOWN"` will have a value of `1.0`.
+
+== Example data
+
+The Quarkus- and Quarkus tests are exhaustive. To see the full set of data, I encourage you to look at link:integration-tests/health-enabled/src/test/java/de/turing85/quarkus/health/as/metrics/it/health/enabled/HealthMetricsTest.java[`HealthMetricsTest.java`], the `@CsvSource` annotations shows all metrics in their expected state when the corresponding check is up or down.
 
 == Contributors ✨
 

@@ -1,4 +1,4 @@
-package de.turing85.quarkus.health.as.metrics.runtime;
+package de.turing85.quarkus.health.as.metrics.runtime.groups;
 
 import java.util.Set;
 import java.util.function.Supplier;
