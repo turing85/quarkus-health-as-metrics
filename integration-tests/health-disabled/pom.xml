@@ -10,12 +10,4 @@
 
   <artifactId>quarkus-health-as-metrics-integration-tests-health-disabled</artifactId>
   <name>Quarkus Health As Metrics - Integration Tests - Health disabled</name>
-
-  <dependencies>
-    <dependency>
-      <groupId>de.turing85</groupId>
-      <artifactId>quarkus-health-as-metrics-integration-tests-commons</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
 </project>

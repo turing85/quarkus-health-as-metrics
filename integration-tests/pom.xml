@@ -53,6 +53,12 @@
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>de.turing85</groupId>
+      <artifactId>quarkus-health-as-metrics-integration-tests-commons</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Test dependencies -->
     <dependency>
       <groupId>io.quarkus</groupId>
