@@ -36,15 +36,17 @@
       <artifactId>lombok</artifactId>
     </dependency>
 
-    <!-- Quarkus dependencies -->
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-reactive</artifactId>
-    </dependency>
+    <!-- Test subject -->
     <dependency>
       <groupId>de.turing85</groupId>
       <artifactId>quarkus-health-as-metrics</artifactId>
       <version>${project.version}</version>
+    </dependency>
+
+    <!-- Quarkus dependencies -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-reactive</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

@@ -1,12 +1,9 @@
 package de.turing85.quarkus.health.as.metrics.it.health.enabled;
 
-import java.time.Duration;
-
 import jakarta.ws.rs.core.Response;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -52,13 +49,22 @@ class HealthMetricsTest {
           "application_health_check{check=\"custom-inner3\",status=\"DOWN\"} 0.0",
           "application_health_check{check=\"custom-inner4\",status=\"DOWN\"} 0.0",
       })
-    // @formatter:on
+  // @formatter:on
   void whenUpThenMetricsContains(String line) {
+    // GIVEN
+    // @formatter:off
+    RestAssured
+        .when().post("/cache/reset")
+        .then().statusCode(is(Response.Status.NO_CONTENT.getStatusCode()));
+
     // WHEN
-    RestAssured.when().post("health/up");
+    RestAssured
+        .when().post("health/up")
+        .then().statusCode(is(Response.Status.NO_CONTENT.getStatusCode()));
+    // @formatter:on
 
     // THEN
-    assertMetricsContainsWithin(line, Duration.ofSeconds(10));
+    assertMetricsContains(line);
   }
 
   @ParameterizedTest
@@ -100,15 +106,20 @@ class HealthMetricsTest {
       })
   // @formatter:on
   void whenDownThenMetricsContain(String line) {
+    // GIVEN
+    // @formatter:off
+    RestAssured
+        .when().post("/cache/reset")
+        .then().statusCode(is(Response.Status.NO_CONTENT.getStatusCode()));
+
     // WHEN
-    RestAssured.when().post("health/down");
+    RestAssured
+        .when().post("health/down")
+        .then().statusCode(is(Response.Status.NO_CONTENT.getStatusCode()));
+    // @formatter:on
 
     // THEN
-    assertMetricsContainsWithin(line, Duration.ofSeconds(10));
-  }
-
-  private static void assertMetricsContainsWithin(String line, Duration duration) {
-    Awaitility.await().atMost(duration).untilAsserted(() -> assertMetricsContains(line));
+    assertMetricsContains(line);
   }
 
   private static void assertMetricsContains(String line) {

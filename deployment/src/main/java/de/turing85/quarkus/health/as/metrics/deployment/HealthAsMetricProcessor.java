@@ -58,6 +58,26 @@ class HealthAsMetricProcessor {
     }
   }
 
+  @BuildStep
+  @Record(ExecutionTime.STATIC_INIT)
+  void registerMappers(HealthAsMetricsEnabledBuildItem enabled,
+      BuildProducer<SyntheticBeanBuildItem> syntheticBeanProducer,
+      DefaultMappersRecorder mappersRecorder) {
+    if (Objects.nonNull(enabled)) {
+      registerMappers(syntheticBeanProducer, mappersRecorder);
+    }
+  }
+
+  @BuildStep
+  void registerBeans(HealthAsMetricsEnabledBuildItem enabled,
+      BuildProducer<AdditionalBeanBuildItem> beanProducer,
+      BuildProducer<AdditionalCacheNameBuildItem> cacheProducer,
+      BuildProducer<RunTimeConfigurationDefaultBuildItem> configProducer) {
+    if (Objects.nonNull(enabled)) {
+      registerAdditionalBeans(beanProducer, cacheProducer, configProducer);
+    }
+  }
+
   private static Set<String> collectCustomGroup(CombinedIndexBuildItem index) {
     // @formatter:off
     return index.getIndex()
@@ -89,16 +109,6 @@ class HealthAsMetricProcessor {
     // @formatter:on
   }
 
-  @BuildStep
-  @Record(ExecutionTime.STATIC_INIT)
-  void registerMappers(HealthAsMetricsEnabledBuildItem enabled,
-      BuildProducer<SyntheticBeanBuildItem> syntheticBeanProducer,
-      DefaultMappersRecorder mappersRecorder) {
-    if (Objects.nonNull(enabled)) {
-      registerMappers(syntheticBeanProducer, mappersRecorder);
-    }
-  }
-
   private static void registerMappers(BuildProducer<SyntheticBeanBuildItem> syntheticBeanProducer,
       DefaultMappersRecorder mappersRecorder) {
     registerMapper(syntheticBeanProducer, mappersRecorder.booleanMapper(), "BooleanMapper");
@@ -126,16 +136,6 @@ class HealthAsMetricProcessor {
             .done()
         .done());
     // @formatter:on
-  }
-
-  @BuildStep
-  void registerBeans(HealthAsMetricsEnabledBuildItem enabled,
-      BuildProducer<AdditionalBeanBuildItem> beanProducer,
-      BuildProducer<AdditionalCacheNameBuildItem> cacheProducer,
-      BuildProducer<RunTimeConfigurationDefaultBuildItem> configProducer) {
-    if (Objects.nonNull(enabled)) {
-      registerAdditionalBeans(beanProducer, cacheProducer, configProducer);
-    }
   }
 
   private static void registerAdditionalBeans(BuildProducer<AdditionalBeanBuildItem> beanProducer,
