@@ -35,15 +35,16 @@ Next, for each `HealthCheck`, an additional pair of metrics is provided:
 .New metrics for custom health checks
 [code]
 ----
-application_health_check{check="<health-check-name>",status="UP",}
+application_health_check{check="<health-check-name>",status="UP"}
 
-application_health_check{check="<health-check-name>",status="DOWN",}
+application_health_check{check="<health-check-name>",status="DOWN"}
 ----
 
 Finally, for each date within a check, that "can be parsed", a separate metrics-pair is created. As of now, the following dates can be parsed:
 - any key, and value is either `"UP"` or `"DOWN"`
 - any key, and value is either `"READY"` or `"NOT READY"`
 - any key, and value is a boolean
+- any key, and value is a long, where `0L` means `DOWN` and any other value means `UP`.
 
 The class link:integration-tests/commons/src/main/java/de/turing85/quarkus/health/as/metrics/it/commons/CustomHealthCheck.java[`CustomHealthCheck.java`] defines three dates within its check:
 
@@ -63,6 +64,7 @@ public class CustomHealthCheck implements HealthCheck {
         .withData("inner1", isHealthy() ? "UP" : "DOWN")
         .withData("inner2", isHealthy() ? "READY" : "NOT READY")
         .withData("inner3", isHealthy())
+        .withData("inner4", isHealthy() ? 1337L : 0L)
         .build();
     // @formatter:on
   }
@@ -74,14 +76,16 @@ For the three date entries, the following six metrics are created:
 .New metrics for check data
 [code]
 ----
-"application_health_check{check=\"custom-inner1\",status=\"UP\"}",
-"application_health_check{check=\"custom-inner2\",status=\"UP\"}",
-"application_health_check{check=\"custom-inner3\",status=\"UP\"}",
+"application_health_check{check=\"custom-inner1\",status=\"UP\"}"
+"application_health_check{check=\"custom-inner2\",status=\"UP\"}"
+"application_health_check{check=\"custom-inner3\",status=\"UP\"}"
+"application_health_check{check=\"custom-inner4\",status=\"UP\"}"
 
-"application_health_check{check=\"custom\",status=\"DOWN\"}",
-"application_health_check{check=\"custom-inner1\",status=\"DOWN\"}",
-"application_health_check{check=\"custom-inner2\",status=\"DOWN\"}",
-"application_health_check{check=\"custom-inner3\",status=\"DOWN\"}",
+"application_health_check{check=\"custom\",status=\"DOWN\"}"
+"application_health_check{check=\"custom-inner1\",status=\"DOWN\"}"
+"application_health_check{check=\"custom-inner2\",status=\"DOWN\"}"
+"application_health_check{check=\"custom-inner3\",status=\"DOWN\"}"
+"application_health_check{check=\"custom-inner4\",status=\"DOWN\"}"
 ----
 
 As we see, the name for the date is the check's name (`"custom"`), followed by the date's name (`"inner1"`, `"inner"2`, or `"inner3"`)

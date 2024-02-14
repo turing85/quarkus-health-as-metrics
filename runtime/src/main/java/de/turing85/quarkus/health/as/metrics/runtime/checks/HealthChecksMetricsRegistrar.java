@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.ToDoubleFunction;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
@@ -13,11 +14,15 @@ import jakarta.enterprise.inject.Instance;
 import de.turing85.quarkus.health.as.metrics.runtime.checks.datamapper.HealthResponseDataMapper;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.quarkus.cache.CacheKey;
+import io.quarkus.cache.CacheResult;
 import io.quarkus.runtime.StartupEvent;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 
+@ApplicationScoped
 public class HealthChecksMetricsRegistrar {
+  public static final String CACHE_NAME = "health-check-data";
   private static final String INDIVIDUAL_CHECK_NAME = "application.health-check";
   private static final String TAG_CHECK = "check";
   private static final String TAG_STATUS = "status";
@@ -32,26 +37,26 @@ public class HealthChecksMetricsRegistrar {
   }
   // @formatter:on
 
-  private static void registerHealthChecks(MeterRegistry registry,
-      Instance<HealthCheck> healthChecks, Instance<HealthResponseDataMapper<?>> dataMappers) {
+  private void registerHealthChecks(MeterRegistry registry, Instance<HealthCheck> healthChecks,
+      Instance<HealthResponseDataMapper<?>> dataMappers) {
     // @formatter:off
     healthChecks.stream()
         .forEach(healthCheck -> registerHealthCheck(
             healthCheck,
             healthCheck.call().getName(),
-            HealthChecksMetricsRegistrar::healthCheckToIntForUp,
-            HealthChecksMetricsRegistrar::healthCheckToIntForDown,
+            check -> healthCheckToIntForUp(check, check.call().getName()),
+            check -> healthCheckToIntForDown(check, check.call().getName()),
             registry,
             dataMappers));
     // @formatter:on
   }
 
-  private static void registerHealthCheck(HealthCheck check, String name,
+  private void registerHealthCheck(HealthCheck check, String name,
       ToDoubleFunction<HealthCheck> upMapper, ToDoubleFunction<HealthCheck> downMapper,
       MeterRegistry registry, Instance<HealthResponseDataMapper<?>> dataMappers) {
     registerHealthCheck(check, name, "UP", upMapper, registry);
     registerHealthCheck(check, name, "DOWN", downMapper, registry);
-    Map<String, Object> checkData = check.call().getData().orElse(Map.of());
+    Map<String, Object> checkData = fetchHealthCheckData(check, name).getData().orElse(Map.of());
     Map<String, Boolean> isUnmapped = new HashMap<>();
     for (HealthResponseDataMapper<?> dataMapper : dataMappers) {
       // @formatter:off
@@ -84,16 +89,22 @@ public class HealthChecksMetricsRegistrar {
     // @formatter:on
   }
 
-  private static int healthCheckToIntForUp(HealthCheck check) {
-    if (check.call().getStatus() == HealthCheckResponse.Status.UP) {
+  @CacheResult(cacheName = CACHE_NAME)
+  @SuppressWarnings("unused")
+  public HealthCheckResponse fetchHealthCheckData(HealthCheck check, @CacheKey String checkName) {
+    return check.call();
+  }
+
+  private int healthCheckToIntForUp(HealthCheck check, String name) {
+    if (fetchHealthCheckData(check, name).getStatus() == HealthCheckResponse.Status.UP) {
       return 1;
     } else {
       return 0;
     }
   }
 
-  private static int healthCheckToIntForDown(HealthCheck check) {
-    if (check.call().getStatus() == HealthCheckResponse.Status.DOWN) {
+  private int healthCheckToIntForDown(HealthCheck check, String name) {
+    if (fetchHealthCheckData(check, name).getStatus() == HealthCheckResponse.Status.DOWN) {
       return 1;
     } else {
       return 0;

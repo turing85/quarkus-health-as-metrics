@@ -31,6 +31,7 @@ public class CustomHealthCheck implements HealthCheck {
         .withData("inner1", isHealthy() ? "UP" : "DOWN")
         .withData("inner2", isHealthy() ? "READY" : "NOT READY")
         .withData("inner3", isHealthy())
+        .withData("inner4", isHealthy() ? 1337L : 0L)
         .build();
     // @formatter:on
   }

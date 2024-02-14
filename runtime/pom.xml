@@ -64,5 +64,9 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-micrometer</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-cache</artifactId>
+    </dependency>
   </dependencies>
 </project>

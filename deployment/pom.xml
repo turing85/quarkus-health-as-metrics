@@ -48,5 +48,9 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-micrometer-deployment</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-cache-deployment</artifactId>
+    </dependency>
   </dependencies>
 </project>
