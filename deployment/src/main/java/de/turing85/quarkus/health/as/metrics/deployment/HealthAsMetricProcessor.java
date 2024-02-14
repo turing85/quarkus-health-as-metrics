@@ -96,25 +96,25 @@ class HealthAsMetricProcessor {
     // @formatter:off
     syntheticBeanProducer.produce(SyntheticBeanBuildItem
         .configure(Set.class)
-        .addType(ParameterizedType.create(Set.class, ClassType.create(String.class)))
-        .unremovable()
-        .supplier(customHealthGroupsRecorder.wrap(customHealthGroups))
-        .scope(Singleton.class)
-        .name(HealthGroupsMetricsRegistrar.CUSTOM_HEALTH_GROUPS_BEAN_NAME)
-        .addQualifier()
-        .annotation(Identifier.class)
-        .addValue("value", HealthGroupsMetricsRegistrar.CUSTOM_HEALTH_GROUPS_BEAN_NAME)
-        .done()
+            .addType(ParameterizedType.create(Set.class, ClassType.create(String.class)))
+            .unremovable()
+            .supplier(customHealthGroupsRecorder.wrap(customHealthGroups))
+            .scope(Singleton.class)
+            .name(HealthGroupsMetricsRegistrar.CUSTOM_HEALTH_GROUPS_BEAN_NAME)
+            .addQualifier()
+                .annotation(Identifier.class)
+                .addValue("value", HealthGroupsMetricsRegistrar.CUSTOM_HEALTH_GROUPS_BEAN_NAME)
+            .done()
         .done());
     // @formatter:on
   }
 
   private static void registerMappers(BuildProducer<SyntheticBeanBuildItem> syntheticBeanProducer,
       DefaultMappersRecorder mappersRecorder) {
-    registerMapper(syntheticBeanProducer, mappersRecorder.booleanMapper(), "BooleanMapper");
-    registerMapper(syntheticBeanProducer, mappersRecorder.upDownMapper(), "UpDownMapper");
+    registerMapper(syntheticBeanProducer, mappersRecorder.booleanMapper(), "booleanMapper");
+    registerMapper(syntheticBeanProducer, mappersRecorder.upDownMapper(), "upDownMapper");
     registerMapper(syntheticBeanProducer, mappersRecorder.readyNotReadyMapper(),
-        "ReadyNotReadyMapper");
+        "readyNotReadyMapper");
     registerMapper(syntheticBeanProducer, mappersRecorder.longMapper(), "longMapper");
   }
 

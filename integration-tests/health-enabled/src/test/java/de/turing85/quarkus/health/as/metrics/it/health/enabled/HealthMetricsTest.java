@@ -43,11 +43,13 @@ class HealthMetricsTest {
           "application_health_check{check=\"custom-inner2\",status=\"UP\"} 1.0",
           "application_health_check{check=\"custom-inner3\",status=\"UP\"} 1.0",
           "application_health_check{check=\"custom-inner4\",status=\"UP\"} 1.0",
+          "application_health_check{check=\"custom-inner5\",status=\"UP\"} 1.0",
 
           "application_health_check{check=\"custom-inner1\",status=\"DOWN\"} 0.0",
           "application_health_check{check=\"custom-inner2\",status=\"DOWN\"} 0.0",
           "application_health_check{check=\"custom-inner3\",status=\"DOWN\"} 0.0",
           "application_health_check{check=\"custom-inner4\",status=\"DOWN\"} 0.0",
+          "application_health_check{check=\"custom-inner5\",status=\"DOWN\"} 0.0",
       })
   // @formatter:on
   void whenUpThenMetricsContains(String line) {
@@ -98,11 +100,13 @@ class HealthMetricsTest {
           "application_health_check{check=\"custom-inner2\",status=\"UP\"} 0.0",
           "application_health_check{check=\"custom-inner3\",status=\"UP\"} 0.0",
           "application_health_check{check=\"custom-inner4\",status=\"UP\"} 0.0",
+          "application_health_check{check=\"custom-inner5\",status=\"UP\"} 0.0",
 
           "application_health_check{check=\"custom-inner1\",status=\"DOWN\"} 1.0",
           "application_health_check{check=\"custom-inner2\",status=\"DOWN\"} 1.0",
           "application_health_check{check=\"custom-inner3\",status=\"DOWN\"} 1.0",
           "application_health_check{check=\"custom-inner4\",status=\"DOWN\"} 1.0",
+          "application_health_check{check=\"custom-inner5\",status=\"DOWN\"} 1.0",
       })
   // @formatter:on
   void whenDownThenMetricsContain(String line) {

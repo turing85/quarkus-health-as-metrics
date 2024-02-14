@@ -31,6 +31,7 @@ class HealthMetricsTest {
           "application_health_check{check=\"custom-inner2\"",
           "application_health_check{check=\"custom-inner3\"",
           "application_health_check{check=\"custom-inner4\"",
+          "application_health_check{check=\"custom-inner5\"",
       })
   // @formatter:on
   void metricDoesNotContain(String line) {
