@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.function.ToDoubleFunction;
 
 import jakarta.enterprise.event.Observes;
+import jakarta.inject.Singleton;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -13,6 +14,7 @@ import io.smallrye.common.annotation.Identifier;
 import io.smallrye.health.SmallRyeHealth;
 import io.smallrye.health.SmallRyeHealthReporter;
 
+@Singleton
 public class HealthGroupsMetricsRegistrar {
   public static final String CUSTOM_HEALTH_GROUPS_BEAN_NAME = "customHealthGroups";
 
@@ -20,107 +22,81 @@ public class HealthGroupsMetricsRegistrar {
   private static final String TAG_GROUP = "group";
   private static final String TAG_STATUS = "status";
 
-  // @formatter:off
-  void register(
-      @Observes StartupEvent ignored,
-      MeterRegistry registry,
-      SmallRyeHealthReporter healthReporter,
+  private final MeterRegistry registry;
+  private final SmallRyeHealthReporter healthReporter;
+  private final Set<String> customGroups;
+
+  public HealthGroupsMetricsRegistrar(MeterRegistry registry, SmallRyeHealthReporter healthReporter,
 
       @Identifier(CUSTOM_HEALTH_GROUPS_BEAN_NAME)
-      @SuppressWarnings("CdiInjectionPointsInspection")
-      Set<String> customGroups) {
-    registerDefaultGroups(registry, healthReporter);
-    registerCustomGroups(registry, healthReporter, customGroups);
-  }
-  // @formatter:on
+      @SuppressWarnings("CdiInjectionPointsInspection") Set<String> customGroups) {
+    this.registry = registry;
+    this.healthReporter = healthReporter;
+    this.customGroups = customGroups;
+  }// @formatter:off
 
-  private static void registerDefaultGroups(MeterRegistry registry,
-      SmallRyeHealthReporter healthReporter) {
-    registerHealthMetricsToRegistry(healthReporter, registry);
-    registerLivenessMetricsToRegistry(healthReporter, registry);
-    registerReadinessMetricsToRegistry(healthReporter, registry);
-    registerStartupMetricsToRegistry(healthReporter, registry);
-    registerWellnessMetricsToRegistry(healthReporter, registry);
-  }
+  void register(@Observes StartupEvent ignored) {
+    registerHealthMetricsToRegistry();
+    registerLivenessMetricsToRegistry();
+    registerReadinessMetricsToRegistry();
+    registerStartupMetricsToRegistry();
+    registerWellnessMetricsToRegistry();
 
-  private static void registerCustomGroups(MeterRegistry registry,
-      SmallRyeHealthReporter healthReporter, Set<String> additionalHealthGroups) {
-    // @formatter:off
-    additionalHealthGroups
-        .forEach(group -> registerCustomGroup(healthReporter, group, registry));
-    // @formatter:on
+    customGroups.forEach(this::registerCustomGroup);
   }
 
-  private static void registerHealthMetricsToRegistry(SmallRyeHealthReporter reporter,
-      MeterRegistry registry) {
+  private void registerHealthMetricsToRegistry() {
     // @formatter:off
     registerReporters(
-        reporter,
         "health",
         r -> statusToIntForUp(r.getHealth()),
-        r -> statusToIntForDown(r.getHealth()),
-        registry);
+        r -> statusToIntForDown(r.getHealth()));
     // @formatter:on
   }
 
-  private static void registerLivenessMetricsToRegistry(SmallRyeHealthReporter reporter,
-      MeterRegistry registry) {
+  private void registerLivenessMetricsToRegistry() {
     // @formatter:off
     registerReporters(
-        reporter,
         "live",
         r -> statusToIntForUp(r.getLiveness()),
-        r -> statusToIntForDown(r.getLiveness()),
-        registry);
+        r -> statusToIntForDown(r.getLiveness()));
     // @formatter:on
   }
 
-  private static void registerReadinessMetricsToRegistry(SmallRyeHealthReporter reporter,
-      MeterRegistry registry) {
+  private void registerReadinessMetricsToRegistry() {
     // @formatter:off
     registerReporters(
-        reporter,
         "ready",
         r -> statusToIntForUp(r.getReadiness()),
-        r -> statusToIntForDown(r.getReadiness()),
-        registry);
+        r -> statusToIntForDown(r.getReadiness()));
     // @formatter:on
   }
 
-  private static void registerStartupMetricsToRegistry(SmallRyeHealthReporter reporter,
-      MeterRegistry registry) {
+  private void registerStartupMetricsToRegistry() {
     // @formatter:off
     registerReporters(
-        reporter,
         "startup",
         r -> statusToIntForUp(r.getStartup()),
-        r -> statusToIntForDown(r.getStartup()),
-        registry);
+        r -> statusToIntForDown(r.getStartup()));
     // @formatter:on
   }
 
-  private static void registerWellnessMetricsToRegistry(SmallRyeHealthReporter reporter,
-      MeterRegistry registry) {
+  private void registerWellnessMetricsToRegistry() {
     // @formatter:off
     registerReporters(
-        reporter,
         "well",
         r -> statusToIntForUp(r.getWellness()),
-        r -> statusToIntForDown(r.getWellness()),
-        registry);
+        r -> statusToIntForDown(r.getWellness()));
     // @formatter:on
   }
 
-  private static void registerCustomGroup(SmallRyeHealthReporter reporter, String groupName,
-      MeterRegistry registry) {
-    if (Objects.nonNull(reporter.getHealthGroup(groupName))) {
+  private void registerCustomGroup(String groupName) {
+    if (Objects.nonNull(healthReporter.getHealthGroup(groupName))) {
       // @formatter:off
       registerReporters(
-          reporter,
           groupName,
           r -> statusToIntForUp(r.getHealthGroup(groupName)),
-          r -> statusToIntForDown(r.getHealthGroup(groupName)),
-          registry);
+          r -> statusToIntForDown(r.getHealthGroup(groupName)));
       // @formatter:on
     }
   }
@@ -133,17 +109,16 @@ public class HealthGroupsMetricsRegistrar {
     return health.isDown() ? 1 : 0;
   }
 
-  private static void registerReporters(SmallRyeHealthReporter reporter, String name,
-      ToDoubleFunction<SmallRyeHealthReporter> upMapper,
-      ToDoubleFunction<SmallRyeHealthReporter> downMapper, MeterRegistry registry) {
-    registerReporter(reporter, name, "UP", upMapper, registry);
-    registerReporter(reporter, name, "DOWN", downMapper, registry);
+  private void registerReporters(String name, ToDoubleFunction<SmallRyeHealthReporter> upMapper,
+      ToDoubleFunction<SmallRyeHealthReporter> downMapper) {
+    registerReporter(name, "UP", upMapper);
+    registerReporter(name, "DOWN", downMapper);
   }
 
-  private static void registerReporter(SmallRyeHealthReporter reporter, String name,
-      String statusTag, ToDoubleFunction<SmallRyeHealthReporter> mapper, MeterRegistry registry) {
+  private void registerReporter(String name, String statusTag,
+      ToDoubleFunction<SmallRyeHealthReporter> mapper) {
     // @formatter:off
-    Gauge.builder(STATUS_CHECK_NAME, reporter, mapper)
+    Gauge.builder(STATUS_CHECK_NAME, healthReporter, mapper)
         .tag(TAG_GROUP, name)
         .tag(TAG_STATUS, statusTag)
         .strongReference(true)

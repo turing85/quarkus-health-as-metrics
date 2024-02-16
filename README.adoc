@@ -1,5 +1,7 @@
 = Quarkus Health as Metrics
 
+== Description
+
 Expose the health status of the application as metrics.
 
 When activated, the extension provides the following new metrics:
@@ -76,16 +78,16 @@ For the three date entries, the following six metrics are created:
 .New metrics for check data
 [code]
 ----
-"application_health_check{check=\"custom-inner1\",status=\"UP\"}"
-"application_health_check{check=\"custom-inner2\",status=\"UP\"}"
-"application_health_check{check=\"custom-inner3\",status=\"UP\"}"
-"application_health_check{check=\"custom-inner4\",status=\"UP\"}"
+application_health_check{check="custom-inner1",status="UP"}
+application_health_check{check="custom-inner2",status="UP"}
+application_health_check{check="custom-inner3",status="UP"}
+application_health_check{check="custom-inner4",status="UP"}
 
-"application_health_check{check=\"custom\",status=\"DOWN\"}"
-"application_health_check{check=\"custom-inner1\",status=\"DOWN\"}"
-"application_health_check{check=\"custom-inner2\",status=\"DOWN\"}"
-"application_health_check{check=\"custom-inner3\",status=\"DOWN\"}"
-"application_health_check{check=\"custom-inner4\",status=\"DOWN\"}"
+application_health_check{check="custom",status="DOWN"}
+application_health_check{check="custom-inner1",status="DOWN"}
+application_health_check{check="custom-inner2",status="DOWN"}
+application_health_check{check="custom-inner3",status="DOWN"}
+application_health_check{check="custom-inner4",status="DOWN"}
 ----
 
 As we see, the name for the date is the check's name (`"custom"`), followed by the date's name (`"inner1"`, `"inner"2`, or `"inner3"`)
@@ -93,6 +95,55 @@ As we see, the name for the date is the check's name (`"custom"`), followed by t
 When the corresponding check is up, the metric with `...,status="UP"` will have a value of `1.0`, and the corresponding metric with `...,status="DOWN"` will have a value of `0.0`.
 
 When the corresponding check is up, the metric with `...,status="UP"` will have a value of `0.0`, and the corresponding metric with `...,status="DOWN"` will have a value of `1.0`.
+
+== Integration with Smallrye's `HealthRegistryImpl`
+
+The extension has a separate registrar for `HealthRegistryImpl, such that all health checks defined through such a registry will be exposed as well. This allows - among other things - a clean integration with `camel-quarkus-health` such that the camel health checks are exposed to the metrics as well. The checks found are exposed as
+
+.Metrics for health checks defined through `HealthRegistryImpl`
+[code]
+----
+application_health_check{check="<registry-name>",status="UP"}
+
+application_health_check{check="<registry-name>",status="DOWN"}
+----
+
+In case of camel, this leads to the following, additional metrics:
+
+.Additional metrics for camel
+[code]
+----
+application_health_check{check="camel-consumers",status="UP"}
+application_health_check{check="camel-routes",status="UP"}
+application_health_check{check="context",status="UP"}
+
+application_health_check{check="camel-consumers",status="DOWN"}
+application_health_check{check="camel-routes",status="DOWN"}
+application_health_check{check="context",status="DOWN"}
+
+----
+
+== Data mappers
+Since health checks can in general return arbitrary responses, we provide the interface link:runtime/src/main/java/de/turing85/quarkus/health/as/metrics/runtime/datamapper/HealthResponseDataMapper.java[`HealthResponseDataMapper.java`]. Instantiations of this interface ase used to determine how the response data of checks should be mapped to the metrics value. This is what allows is to provide metrics for data lines in checks.
+
+The extension provides five mapper beans with the following names:
+
+- `"booleanMapper"`,
+- `"longMapper"`,
+- `"upDownMapper"`,
+- `"ReadyNotReadyMapper"`, and
+- `"statusMapper"`.
+
+The default mappers are defined in link:runtime/src/main/java/de/turing85/quarkus/health/as/metrics/runtime/datamapper/DefaultMappersRecorder.java[`DefaultMappersRecorder.java`].
+
+== Caches
+
+To prevent querying the health checks unnecessarily, the extension provides two caches:
+
+- `"health-check-data"` to cache the results of `HealthCheck`s
+- `"health-registry-data"` ot cache th results of `HealthRegistryImpl`s
+
+Both caches are configured to invalidate entries 5 seconds after write. The caches can be configured as described in the link:https://quarkus.io/guides/cache[Documentation for application caches (`quarkus.io`)]. If we, for example, want to set the invalidation time for cache `"health-registry-data"` to 10 seconds after write, we can add `quarkus.cache.caffeine."health-registry-data".expire-after-seconds = 10s` to our `application.properties`.
 
 == Example data
 

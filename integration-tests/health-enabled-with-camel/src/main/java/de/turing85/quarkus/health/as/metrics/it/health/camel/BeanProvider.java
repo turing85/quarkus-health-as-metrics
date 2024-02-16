@@ -1,4 +1,4 @@
-package de.turing85.quarkus.health.as.metrics.it.health.enabled;
+package de.turing85.quarkus.health.as.metrics.it.health.camel;
 
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;

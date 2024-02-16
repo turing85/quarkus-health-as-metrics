@@ -12,9 +12,11 @@
   <name>Quarkus Health As Metrics - Integration Tests - Parent</name>
   <packaging>pom</packaging>
   <modules>
-    <module>health-disabled</module>
-    <module>health-enabled</module>
     <module>commons</module>
+    <module>health-disabled</module>
+    <module>health-disabled-with-camel</module>
+    <module>health-enabled</module>
+    <module>health-enabled-with-camel</module>
   </modules>
 
   <build>

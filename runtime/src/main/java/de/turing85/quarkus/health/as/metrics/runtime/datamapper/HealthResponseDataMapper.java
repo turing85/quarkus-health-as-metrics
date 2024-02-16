@@ -1,20 +1,30 @@
-package de.turing85.quarkus.health.as.metrics.runtime.checks.datamapper;
+package de.turing85.quarkus.health.as.metrics.runtime.datamapper;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.regex.Pattern;
 
+import io.smallrye.health.registry.HealthRegistryImpl;
+import io.smallrye.mutiny.Uni;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 
 public interface HealthResponseDataMapper<T> {
   Class<T> mappableType();
 
-  ToDoubleFunction<HealthCheck> upMapper(String key);
+  ToDoubleFunction<HealthCheck> checkUpMapper(String key);
 
-  ToDoubleFunction<HealthCheck> downMapper(String key);
+  ToDoubleFunction<HealthRegistryImpl> registryUpMapper();
+
+  ToDoubleFunction<HealthCheck> checkDownMapper(String key);
+
+  ToDoubleFunction<HealthRegistryImpl> registryDownMapper();
 
   Pattern keyFilterPattern();
 
@@ -58,7 +68,7 @@ public interface HealthResponseDataMapper<T> {
     }
 
     @Override
-    public ToDoubleFunction<HealthCheck> upMapper(String key) {
+    public ToDoubleFunction<HealthCheck> checkUpMapper(String key) {
       // @formatter:off
       return check -> Optional.ofNullable(check)
           .map(HealthCheck::call)
@@ -73,7 +83,43 @@ public interface HealthResponseDataMapper<T> {
     }
 
     @Override
-    public ToDoubleFunction<HealthCheck> downMapper(String key) {
+    public ToDoubleFunction<HealthRegistryImpl> registryUpMapper() {
+      // @formatter:off
+      return registry -> this.getResponseFromRegistry(registry)
+          .filter(upPredicate)
+          .map(unused -> 1.0)
+          .orElse(0.0);
+      // @formatter:on
+    }
+
+    private Optional<T> getResponseFromRegistry(HealthRegistryImpl healthRegistry) {
+      // @formatter:off
+      return Optional.ofNullable(healthRegistry)
+          .map(registry -> registry.getChecks(Map.of()))
+          .stream().flatMap(Collection::stream)
+          .map(Uni::subscribeAsCompletionStage)
+          .map(Impl::pureGetCompletableFuture)
+          .filter(Objects::nonNull)
+          .map(HealthCheckResponse::getStatus)
+          .filter(this::valueMappable)
+          .map(this.mappableType::cast)
+          .findFirst();
+      // @formatter:on
+    }
+
+    private static <T> T pureGetCompletableFuture(CompletableFuture<T> future) {
+      try {
+        return future.get();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return null;
+      } catch (ExecutionException e) {
+        return null;
+      }
+    }
+
+    @Override
+    public ToDoubleFunction<HealthCheck> checkDownMapper(String key) {
       // @formatter:off
       return check -> Optional.ofNullable(check)
           .map(HealthCheck::call)
@@ -81,6 +127,16 @@ public interface HealthResponseDataMapper<T> {
           .map(map -> map.get(key))
           .filter(mappableType()::isInstance)
           .map(mappableType()::cast)
+          .filter(downPredicate)
+          .map(unused -> 1.0)
+          .orElse(0.0);
+      // @formatter:on
+    }
+
+    @Override
+    public ToDoubleFunction<HealthRegistryImpl> registryDownMapper() {
+      // @formatter:off
+      return registry -> this.getResponseFromRegistry(registry)
           .filter(downPredicate)
           .map(unused -> 1.0)
           .orElse(0.0);

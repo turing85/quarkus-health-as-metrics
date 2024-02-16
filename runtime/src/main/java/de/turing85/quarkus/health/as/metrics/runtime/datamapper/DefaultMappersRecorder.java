@@ -1,8 +1,9 @@
-package de.turing85.quarkus.health.as.metrics.runtime.checks.datamapper;
+package de.turing85.quarkus.health.as.metrics.runtime.datamapper;
 
 import java.util.function.Supplier;
 
 import io.quarkus.runtime.annotations.Recorder;
+import org.eclipse.microprofile.health.HealthCheckResponse;
 
 import static java.util.function.Predicate.not;
 
@@ -48,6 +49,17 @@ public class DefaultMappersRecorder {
         .keyFilter(".*")
         .upPredicate(not(Long.valueOf(0)::equals))
         .downPredicate(Long.valueOf(0)::equals)
+        .build();
+    // @formatter:on
+  }
+
+  public Supplier<HealthResponseDataMapper<HealthCheckResponse.Status>> statusMapper() {
+    // @formatter:off
+    return () -> HealthResponseDataMapper.<HealthCheckResponse.Status>builder()
+        .mappableType(HealthCheckResponse.Status.class)
+        .keyFilter(".*")
+        .upPredicate(HealthCheckResponse.Status.UP::equals)
+        .downPredicate(HealthCheckResponse.Status.DOWN::equals)
         .build();
     // @formatter:on
   }

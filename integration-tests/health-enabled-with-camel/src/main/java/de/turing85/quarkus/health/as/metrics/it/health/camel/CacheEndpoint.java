@@ -1,4 +1,4 @@
-package de.turing85.quarkus.health.as.metrics.it.health.enabled;
+package de.turing85.quarkus.health.as.metrics.it.health.camel;
 
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;

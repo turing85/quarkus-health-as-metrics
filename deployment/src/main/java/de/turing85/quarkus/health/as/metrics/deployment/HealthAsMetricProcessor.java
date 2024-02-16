@@ -8,11 +8,13 @@ import java.util.stream.Collectors;
 
 import jakarta.inject.Singleton;
 
+import de.turing85.quarkus.health.as.metrics.runtime.Config;
 import de.turing85.quarkus.health.as.metrics.runtime.checks.HealthChecksMetricsRegistrar;
-import de.turing85.quarkus.health.as.metrics.runtime.checks.datamapper.DefaultMappersRecorder;
-import de.turing85.quarkus.health.as.metrics.runtime.checks.datamapper.HealthResponseDataMapper;
+import de.turing85.quarkus.health.as.metrics.runtime.datamapper.DefaultMappersRecorder;
+import de.turing85.quarkus.health.as.metrics.runtime.datamapper.HealthResponseDataMapper;
 import de.turing85.quarkus.health.as.metrics.runtime.groups.CustomHealthGroupsRecorder;
 import de.turing85.quarkus.health.as.metrics.runtime.groups.HealthGroupsMetricsRegistrar;
+import de.turing85.quarkus.health.as.metrics.runtime.registries.HealthRegistriesMetricsRegistrar;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.cache.deployment.spi.AdditionalCacheNameBuildItem;
@@ -116,6 +118,7 @@ class HealthAsMetricProcessor {
     registerMapper(syntheticBeanProducer, mappersRecorder.readyNotReadyMapper(),
         "readyNotReadyMapper");
     registerMapper(syntheticBeanProducer, mappersRecorder.longMapper(), "longMapper");
+    registerMapper(syntheticBeanProducer, mappersRecorder.statusMapper(), "statusMapper");
   }
 
   private static <T> void registerMapper(
@@ -143,10 +146,16 @@ class HealthAsMetricProcessor {
       BuildProducer<RunTimeConfigurationDefaultBuildItem> configProducer) {
     beanProducer.produce(AdditionalBeanBuildItem.unremovableOf(HealthGroupsMetricsRegistrar.class));
     beanProducer.produce(AdditionalBeanBuildItem.unremovableOf(HealthChecksMetricsRegistrar.class));
-    cacheProducer
-        .produce(new AdditionalCacheNameBuildItem(HealthChecksMetricsRegistrar.CACHE_NAME));
-    configProducer.produce(
-        new RunTimeConfigurationDefaultBuildItem("quarkus.cache.caffeine.\"%s\".expire-after-write"
-            .formatted(HealthChecksMetricsRegistrar.CACHE_NAME), "5s"));
+    beanProducer
+        .produce(AdditionalBeanBuildItem.unremovableOf(HealthRegistriesMetricsRegistrar.class));
+
+    cacheProducer.produce(new AdditionalCacheNameBuildItem(Config.CACHE_CHECK_NAME));
+    cacheProducer.produce(new AdditionalCacheNameBuildItem(Config.CACHE_REGISTRY_NAME));
+    configProducer.produce(new RunTimeConfigurationDefaultBuildItem(
+        "quarkus.cache.caffeine.\"%s\".expire-after-write".formatted(Config.CACHE_CHECK_NAME),
+        "5s"));
+    configProducer.produce(new RunTimeConfigurationDefaultBuildItem(
+        "quarkus.cache.caffeine.\"%s\".expire-after-write".formatted(Config.CACHE_REGISTRY_NAME),
+        "5s"));
   }
 }
