@@ -1,4 +1,4 @@
-package de.turing85.quarkus.health.as.metrics.runtime.datamapper;
+package de.turing85.quarkus.health.as.metrics.runtime.datamappers;
 
 import java.util.function.Supplier;
 

@@ -4,7 +4,7 @@ import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
 
-import de.turing85.quarkus.health.as.metrics.runtime.datamapper.HealthResponseDataMapper;
+import de.turing85.quarkus.health.as.metrics.runtime.datamappers.HealthResponseDataMapper;
 import io.smallrye.common.annotation.Identifier;
 
 @Dependent

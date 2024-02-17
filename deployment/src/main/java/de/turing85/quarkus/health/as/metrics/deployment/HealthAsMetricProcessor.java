@@ -10,8 +10,8 @@ import jakarta.inject.Singleton;
 
 import de.turing85.quarkus.health.as.metrics.runtime.Config;
 import de.turing85.quarkus.health.as.metrics.runtime.checks.HealthChecksMetricsRegistrar;
-import de.turing85.quarkus.health.as.metrics.runtime.datamapper.DefaultMappersRecorder;
-import de.turing85.quarkus.health.as.metrics.runtime.datamapper.HealthResponseDataMapper;
+import de.turing85.quarkus.health.as.metrics.runtime.datamappers.DefaultMappersRecorder;
+import de.turing85.quarkus.health.as.metrics.runtime.datamappers.HealthResponseDataMapper;
 import de.turing85.quarkus.health.as.metrics.runtime.groups.CustomHealthGroupsRecorder;
 import de.turing85.quarkus.health.as.metrics.runtime.groups.HealthGroupsMetricsRegistrar;
 import de.turing85.quarkus.health.as.metrics.runtime.registries.HealthRegistriesMetricsRegistrar;

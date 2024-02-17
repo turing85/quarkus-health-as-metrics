@@ -13,7 +13,7 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Singleton;
 
 import de.turing85.quarkus.health.as.metrics.runtime.Config;
-import de.turing85.quarkus.health.as.metrics.runtime.datamapper.HealthResponseDataMapper;
+import de.turing85.quarkus.health.as.metrics.runtime.datamappers.HealthResponseDataMapper;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.quarkus.cache.CacheKey;
@@ -53,26 +53,7 @@ public class HealthChecksMetricsRegistrar {
       MeterRegistry registry, Instance<HealthResponseDataMapper<?>> dataMappers) {
     registerHealthCheck(check, name, "UP", upMapper, registry);
     registerHealthCheck(check, name, "DOWN", downMapper, registry);
-    Map<String, Object> checkData = fetchHealthCheckData(check).getData().orElse(Map.of());
-    Map<String, Boolean> isUnmapped = new HashMap<>();
-    for (HealthResponseDataMapper<?> dataMapper : dataMappers) {
-      // @formatter:off
-      checkData.entrySet().stream()
-          .filter(entry -> isUnmapped.getOrDefault(entry.getKey(), true))
-          .filter(entry -> dataMapper.keyFilterPattern().matcher(entry.getKey()).matches())
-          .filter(entry -> dataMapper.mappableType().isInstance(entry.getValue()))
-          .filter(entry -> dataMapper.valueMappable(entry.getValue()))
-
-          // We know that isUnmapped.get(entry.getKey()) is null, thus
-          // isUnmapped.put(entry.getKey(), false) will return null
-          // We use this trick to avoid calling ".peek(...)" on the stream.
-          .filter(entry -> Objects.isNull(isUnmapped.put(entry.getKey(), false)))
-
-          .map(entry -> createGaugeBuildersForCheck(name, entry.getKey(), check, dataMapper))
-          .flatMap(Collection::stream)
-          .forEach(builder -> builder.register(registry));
-      // @formatter:on
-    }
+    registerCheckData(check, name, registry, dataMappers);
   }
 
   private static void registerHealthCheck(HealthCheck check, String name, String status,
@@ -104,6 +85,30 @@ public class HealthChecksMetricsRegistrar {
       return 1;
     } else {
       return 0;
+    }
+  }
+
+  private void registerCheckData(HealthCheck check, String name, MeterRegistry registry,
+      Instance<HealthResponseDataMapper<?>> dataMappers) {
+    Map<String, Object> checkData = fetchHealthCheckData(check).getData().orElse(Map.of());
+    Map<String, Boolean> isUnmapped = new HashMap<>();
+    for (HealthResponseDataMapper<?> dataMapper : dataMappers) {
+      // @formatter:off
+      checkData.entrySet().stream()
+          .filter(entry -> isUnmapped.getOrDefault(entry.getKey(), true))
+          .filter(entry -> dataMapper.keyFilterPattern().matcher(entry.getKey()).matches())
+          .filter(entry -> dataMapper.mappableType().isInstance(entry.getValue()))
+          .filter(entry -> dataMapper.valueMappable(entry.getValue()))
+
+          // We know that isUnmapped.get(entry.getKey()) is null, thus
+          // isUnmapped.put(entry.getKey(), false) will return null
+          // We use this trick to avoid calling ".peek(...)" on the stream.
+          .filter(entry -> Objects.isNull(isUnmapped.put(entry.getKey(), false)))
+
+          .map(entry -> createGaugeBuildersForCheck(name, entry.getKey(), check, dataMapper))
+          .flatMap(Collection::stream)
+          .forEach(builder -> builder.register(registry));
+      // @formatter:on
     }
   }
 

@@ -16,7 +16,7 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Singleton;
 
 import de.turing85.quarkus.health.as.metrics.runtime.Config;
-import de.turing85.quarkus.health.as.metrics.runtime.datamapper.HealthResponseDataMapper;
+import de.turing85.quarkus.health.as.metrics.runtime.datamappers.HealthResponseDataMapper;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.quarkus.cache.CacheKey;

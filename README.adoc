@@ -124,7 +124,7 @@ application_health_check{check="context",status="DOWN"}
 ----
 
 == Data mappers
-Since health checks can in general return arbitrary responses, we provide the interface link:runtime/src/main/java/de/turing85/quarkus/health/as/metrics/runtime/datamapper/HealthResponseDataMapper.java[`HealthResponseDataMapper.java`]. Instantiations of this interface ase used to determine how the response data of checks should be mapped to the metrics value. This is what allows is to provide metrics for data lines in checks.
+Since health checks can in general return arbitrary responses, we provide the interface link:runtime/src/main/java/de/turing85/quarkus/health/as/metrics/runtime/datamappers/HealthResponseDataMapper.java[`HealthResponseDataMapper.java`]. Instantiations of this interface ase used to determine how the response data of checks should be mapped to the metrics value. This is what allows is to provide metrics for data lines in checks.
 
 The extension provides five mapper beans with the following names:
 
@@ -134,7 +134,7 @@ The extension provides five mapper beans with the following names:
 - `"ReadyNotReadyMapper"`, and
 - `"statusMapper"`.
 
-The default mappers are defined in link:runtime/src/main/java/de/turing85/quarkus/health/as/metrics/runtime/datamapper/DefaultMappersRecorder.java[`DefaultMappersRecorder.java`].
+The default mappers are defined in link:runtime/src/main/java/de/turing85/quarkus/health/as/metrics/runtime/datamappers/DefaultMappersRecorder.java[`DefaultMappersRecorder.java`].
 
 == Caches
 
